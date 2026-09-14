@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hóa đơn giá trị gia tăng</title>
+<style>
+  :root{
+    --ink:#1a2a4a;
+    --line:#1a2a4a;
+    --paper:#ffffff;
+    --bg:#e9edf3;
+    --muted:#5b6b8c;
+    --accent:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: "Times New Roman", Times, serif;
+    background:var(--bg);
+    color:var(--ink);
+    padding:24px 12px 80px;
+  }
+  .toolbar{
+    max-width:860px;
+    margin:0 auto 16px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .toolbar h1{
+    font-size:16px;
+    margin:0;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .btns{display:flex; gap:8px; flex-wrap:wrap;}
+  button{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:13px;
+    padding:9px 16px;
+    border-radius:6px;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:#fff;
+    cursor:pointer;
+  }
+  button.secondary{
+    background:#fff;
+    color:var(--ink);
+  }
+  button:hover{opacity:.85;}
+
+  .sheet{
+    max-width:860px;
+    margin:0 auto;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    padding:26px 30px 34px;
+  }
+  .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:1px solid var(--line);
+    padding-bottom:10px;
+    margin-bottom:14px;
+  }
+  .title h2{
+    text-align:center;
+    font-size:22px;
+    margin:0;
+    letter-spacing:.5px;
+  }
+  .title .sub{
+    text-align:center;
+    font-style:italic;
+    font-size:15px;
+    margin-top:2px;
+  }
+  .title .note{
+    text-align:center;
+    font-size:12px;
+    margin-top:6px;
+    font-weight:bold;
+  }
+  .title .note2{
+    text-align:center;
+    font-size:11.5px;
+    font-style:italic;
+  }
+  .meta{
+    font-size:12.5px;
+    text-align:right;
+    min-width:170px;
+  }
+  .meta div{margin-bottom:3px;}
+  .meta b{font-weight:bold;}
+  .date-line{
+    text-align:center;
+    font-size:12.5px;
+    margin-bottom:14px;
+  }
+  .date-line span.num{
+    display:inline-block;
+    min-width:26px;
+    border-bottom:1px dotted var(--ink);
+    text-align:center;
+  }
+
+  .field-row{
+    font-size:13px;
+    margin-bottom:6px;
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+  }
+  .field-row > label{
+    white-space:nowrap;
+    font-weight:bold;
+  }
+  .field-row > label i{font-weight:normal;}
+  .field-row input{
+    flex:1;
+    border:none;
+    border-bottom:1px dotted #888;
+    font-family:inherit;
+    font-size:13px;
+    padding:2px 3px;
+    background:transparent;
+    color:var(--ink);
+  }
+  .field-row input:focus{outline:none; border-bottom:1px solid var(--accent);}
+  .two-col{display:flex; gap:20px;}
+  .two-col .field-row{flex:1;}
+
+  .section-label{
+    font-weight:bold;
+    font-size:13px;
+    margin:12px 0 4px;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:8px;
+    font-size:12.5px;
+  }
+  th,td{
+    border:1px solid var(--line);
+    padding:5px 6px;
+    vertical-align:top;
+  }
+  thead th{
+    text-align:center;
+    font-weight:bold;
+    background:#f2f4f8;
+  }
+  thead tr.abc td, thead tr.abc th{
+    text-align:center;
+    font-style:italic;
+    font-weight:normal;
+    padding:2px 6px;
+  }
+  td.stt{text-align:center; width:32px; cursor:pointer;}
+  td.unit{text-align:center; width:60px;}
+  td.qty{width:70px;}
+  td.price{width:100px;}
+  td.amount{width:110px;}
+  td input, td textarea{
+    width:100%;
+    border:none;
+    font-family:inherit;
+    font-size:12.5px;
+    background:transparent;
+    color:var(--ink);
+    resize:none;
+  }
+  td input:focus, td textarea:focus{outline:none; background:#fffbe9;}
+  td .desc{
+    min-height:140px;
+    line-height:1.5;
+    overflow:hidden;
+    display:block;
+    padding:2px 3px;
+  }
+  td.qty input, td.price input{text-align:right;}
+  td.amount .amt-val{
+    text-align:right;
+    display:block;
+    padding:2px 3px;
+    font-variant-numeric:tabular-nums;
+  }
+  tfoot td{
+    font-weight:bold;
+    font-size:13px;
+  }
+  tfoot td.label{
+    text-align:right;
+  }
+  tfoot td.val{
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .add-row-wrap{
+    margin-top:8px;
+    text-align:center;
+  }
+  .add-row-wrap button{
+    font-size:12px;
+    padding:5px 14px;
+  }
+
+  .words-row{
+    font-size:13px;
+    margin-top:10px;
+    display:flex;
+    gap:6px;
+    align-items:baseline;
+  }
+  .words-row label{font-weight:bold; white-space:nowrap;}
+  .words-row input{
+    flex:1;
+    border:none;
+    border-bottom:1px dotted #888;
+    font-family:inherit;
+    font-style:italic;
+    font-size:13px;
+    padding:2px 3px;
+    background:transparent;
+    color:var(--ink);
+  }
+  .words-row input:focus{outline:none; border-bottom:1px solid var(--accent);}
+
+  .sign{
+    display:flex;
+    justify-content:space-between;
+    margin-top:26px;
+    font-size:13px;
+    text-align:center;
+  }
+  .sign > div{width:47%;}
+  .sign b{display:block;}
+  .sign i{font-size:11.5px;}
+  .sign .space{height:70px;}
+
+  .footer-note{
+    margin-top:26px;
+    border-top:1px dotted #999;
+    padding-top:6px;
+    font-size:10px;
+    text-align:center;
+    color:var(--muted);
+    font-style:italic;
+  }
+
+  @media print{
+    body{background:#fff; padding:0;}
+    .toolbar{display:none;}
+    .sheet{border:none; max-width:100%; padding:10mm 12mm;}
+    td input, td textarea, .field-row input, .words-row input{border-bottom:none;}
+    .add-row-wrap{display:none;}
+    @page{ size:A4; margin:10mm; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <h1>Trình tạo Hóa đơn GTGT — điền thông tin và xuất PDF</h1>
+    <div class="btns">
+      <button class="secondary" id="addRowBtnTop" type="button">+ Thêm dòng</button>
+      <button id="printBtn" type="button">Xuất PDF / In</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="invoiceSheet">
+
+    <div class="top">
+      <div class="title" style="flex:1;">
+        <h2>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h2>
+        <div class="sub">(VAT INVOICE)</div>
+        <div class="note">Bản thể hiện của hóa đơn điện tử</div>
+        <div class="note2">(Electronic invoice display)</div>
+      </div>
+      <div class="meta">
+        <div><b>Ký hiệu</b> <i>(Serial):</i> <input type="text" id="serial" value="1C25TLV" style="width:90px; text-align:right; border-bottom:1px dotted #888;"></div>
+        <div><b>Số</b> <i>(No.):</i> <input type="text" id="invNo" value="" style="width:90px; text-align:right; border-bottom:1px dotted #888;"></div>
+      </div>
+    </div>
+
+    <div class="date-line">
+      Ngày <input type="date" id="invDate" style="border:none; border-bottom:1px dotted #888; font-family:inherit; font-size:12.5px; background:transparent; color:var(--ink);">
+      <i>(date/month/year)</i>
+    </div>
+
+    <div class="section-label">Đơn vị bán hàng (Seller)</div>
+    <div class="field-row"><label>Tên đơn vị:</label><input id="sellerName" value="CÔNG TY TNHH MỘT THÀNH VIÊN LÀNG VIỆT"></div>
+    <div class="two-col">
+      <div class="field-row"><label>Mã số thuế:</label><input id="sellerTax" value="4200749393"></div>
+      <div class="field-row"><label>Điện thoại:</label><input id="sellerTel" value="02583880386"></div>
+    </div>
+    <div class="field-row"><label>Địa chỉ:</label><input id="sellerAddr" value="3A Đông Phước, Phường Nam Nha Trang, Tỉnh Khánh Hòa, Việt Nam"></div>
+    <div class="two-col">
+      <div class="field-row"><label>Số tài khoản:</label><input id="sellerAcc" value="0061000731744"></div>
+      <div class="field-row"><label>Ngân hàng:</label><input id="sellerBank" value="Vietcombank chi nhánh Khánh Hòa"></div>
+    </div>
+
+    <div class="section-label">Đơn vị mua hàng (Buyer)</div>
+    <div class="field-row"><label>Họ tên người mua:</label><input id="buyerPerson" value=""></div>
+    <div class="field-row"><label>Tên đơn vị:</label><input id="buyerName" value=""></div>
+    <div class="two-col">
+      <div class="field-row"><label>Mã số thuế:</label><input id="buyerTax" value=""></div>
+      <div class="field-row"><label>Hình thức TT:</label><input id="buyerPay" value="TM/CK"></div>
+    </div>
+    <div class="field-row"><label>Địa chỉ:</label><input id="buyerAddr" value=""></div>
+    <div class="two-col">
+      <div class="field-row"><label>Số tài khoản:</label><input id="buyerAcc" value=""></div>
+      <div class="field-row"><label>Ngân hàng:</label><input id="buyerBank" value=""></div>
+    </div>
+    <div class="field-row"><label>Ghi chú:</label><input id="noteField" value=""></div>
+
+    <table id="itemsTable">
+      <thead>
+        <tr>
+          <th style="width:32px;">STT<br><i style="font-weight:normal;">(No.)</i></th>
+          <th>Tên hàng hóa, dịch vụ<br><i style="font-weight:normal;">(Description)</i></th>
+          <th style="width:60px;">ĐVT<br><i style="font-weight:normal;">(Unit)</i></th>
+          <th style="width:70px;">Số lượng<br><i style="font-weight:normal;">(Qty)</i></th>
+          <th style="width:100px;">Đơn giá<br><i style="font-weight:normal;">(Unit price)</i></th>
+          <th style="width:110px;">Thành tiền<br><i style="font-weight:normal;">(Amount)</i></th>
+        </tr>
+        <tr class="abc">
+          <td>a</td><td>b</td><td>c</td><td>(1)</td><td>(2)</td><td>(3)=(1)x(2)</td>
+        </tr>
+      </thead>
+      <tbody id="itemsBody">
+        <!-- rows injected by JS -->
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5" class="label">Cộng tiền hàng <i style="font-weight:normal;">(Total amount)</i>:</td>
+          <td class="val" id="subtotalVal">0</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="label" style="text-align:left;">
+            Thuế suất GTGT <i style="font-weight:normal;">(VAT rate)</i>:
+            <select id="vatRate" style="font-family:inherit; font-size:12.5px;">
+              <option value="0">0%</option>
+              <option value="5">5%</option>
+              <option value="8" selected>8%</option>
+              <option value="10">10%</option>
+            </select>
+          </td>
+          <td colspan="2" class="label">Tiền thuế GTGT <i style="font-weight:normal;">(VAT amount)</i>:</td>
+          <td class="val" id="vatVal">0</td>
+        </tr>
+        <tr>
+          <td colspan="5" class="label">TỔNG CỘNG TIỀN THANH TOÁN <i style="font-weight:normal;">(Total payment)</i>:</td>
+          <td class="val" id="totalVal">0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="add-row-wrap">
+      <button id="addRowBtn" type="button">+ Thêm dòng hàng hóa</button>
+    </div>
+
+    <div class="words-row">
+      <label>Số tiền viết bằng chữ:</label>
+      <input id="wordsVal" readonly value="">
+    </div>
+
+    <div class="sign">
+      <div>
+        <b>Người mua hàng (Buyer)</b>
+        <i>(Ký, ghi rõ họ, tên)</i>
+        <div class="space"></div>
+      </div>
+      <div>
+        <b>Người bán hàng (Seller)</b>
+        <i>(Ký, ghi rõ họ, tên)</i>
+        <div class="space"></div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Hóa đơn được tạo bởi công cụ điền hóa đơn tĩnh — vui lòng kiểm tra lại thông tin trước khi sử dụng chính thức.
+    </div>
+
+  </div>
+
+<script>
+const itemsBody = document.getElementById('itemsBody');
+let rowCount = 0;
+
+function currency(n){
+  if(isNaN(n)) n = 0;
+  return Math.round(n).toLocaleString('vi-VN');
+}
+
+function addRow(prefill){
+  rowCount++;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="stt" title="Nhấp đúp để xóa dòng này">${rowCount}</td>
+    <td><textarea rows="7" class="desc">${prefill && prefill.desc ? prefill.desc : ''}</textarea></td>
+    <td class="unit"><input type="text" class="unit-input" value="${prefill && prefill.unit ? prefill.unit : ''}"></td>
+    <td class="qty"><input type="number" class="qty-input" value="${prefill && prefill.qty ? prefill.qty : ''}" step="any"></td>
+    <td class="price"><input type="number" class="price-input" value="${prefill && prefill.price ? prefill.price : ''}" step="any"></td>
+    <td class="amount"><span class="amt-val">0</span></td>
+  `;
+  itemsBody.appendChild(tr);
+  autoGrow(tr.querySelector('.desc'));
+  renumber();
+  recalc();
+}
+
+function renumber(){
+  const rows = itemsBody.querySelectorAll('tr');
+  rows.forEach((r,i)=>{ r.querySelector('.stt').textContent = i+1; });
+  rowCount = rows.length;
+}
+
+function numberToVietnameseWords(num){
+  num = Math.round(num);
+  if(num === 0) return "Không đồng";
+  const chuHangDonVi = ["", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+  const chuHangChuc = ["", "mười", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"];
+  function docBaChuSo(baso){
+    let tram = Math.floor(baso/100);
+    let chuc = Math.floor((baso%100)/10);
+    let donvi = baso%10;
+    let s = "";
+    if(tram>0){ s += chuHangDonVi[tram] + " trăm "; }
+    if(chuc>1){
+      s += chuHangChuc[chuc] + " ";
+      if(donvi===1) s += "mốt ";
+      else if(donvi===5) s += "lăm ";
+      else if(donvi>0) s += chuHangDonVi[donvi] + " ";
+    } else if(chuc===1){
+      s += "mười ";
+      if(donvi===1) s += "một ";
+      else if(donvi===5) s += "lăm ";
+      else if(donvi>0) s += chuHangDonVi[donvi] + " ";
+    } else if(chuc===0 && tram>0 && donvi>0){
+      s += "lẻ " + chuHangDonVi[donvi] + " ";
+    } else if(chuc===0 && tram===0 && donvi>0){
+      s += chuHangDonVi[donvi] + " ";
+    }
+    return s.trim();
+  }
+  const donVi = ["", "nghìn", "triệu", "tỷ"];
+  let so = num;
+  let nhom = [];
+  while(so > 0){
+    nhom.push(so % 1000);
+    so = Math.floor(so/1000);
+  }
+  let result = "";
+  for(let i = nhom.length - 1; i >= 0; i--){
+    if(nhom[i] > 0){
+      result += docBaChuSo(nhom[i]) + " " + donVi[i] + " ";
+    }
+  }
+  result = result.replace(/\s+/g,' ').trim();
+  result = result.charAt(0).toUpperCase() + result.slice(1);
+  return result + " đồng";
+}
+
+function autoGrow(el){
+  el.style.height = 'auto';
+  el.style.height = Math.max(el.scrollHeight, 140) + 'px';
+}
+
+function recalc(){
+  let subtotal = 0;
+  itemsBody.querySelectorAll('tr').forEach(tr=>{
+    const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
+    const price = parseFloat(tr.querySelector('.price-input').value) || 0;
+    const amt = qty * price;
+    tr.querySelector('.amt-val').textContent = currency(amt);
+    subtotal += amt;
+  });
+  const vatRate = parseFloat(document.getElementById('vatRate').value) || 0;
+  const vat = subtotal * vatRate / 100;
+  const total = subtotal + vat;
+
+  document.getElementById('subtotalVal').textContent = currency(subtotal);
+  document.getElementById('vatVal').textContent = currency(vat);
+  document.getElementById('totalVal').textContent = currency(total);
+  document.getElementById('wordsVal').value = numberToVietnameseWords(total);
+}
+
+itemsBody.addEventListener('input', (e)=>{
+  if(e.target.classList.contains('desc')){
+    autoGrow(e.target);
+  }
+  recalc();
+});
+itemsBody.addEventListener('dblclick', (e)=>{
+  if(e.target.classList.contains('stt')){
+    if(itemsBody.querySelectorAll('tr').length > 1){
+      e.target.closest('tr').remove();
+      renumber();
+      recalc();
+    }
+  }
+});
+document.getElementById('vatRate').addEventListener('change', recalc);
+
+document.getElementById('addRowBtn').addEventListener('click', ()=>addRow());
+document.getElementById('addRowBtnTop').addEventListener('click', ()=>addRow());
+
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  window.print();
+});
+
+// prefill example row + today's date
+addRow({
+  desc: "Dịch vụ vận chuyển hành khách xe 16 chỗ...",
+  unit: "Ngày",
+  qty: 1,
+  price: 0
+});
+document.getElementById('invDate').value = new Date().toISOString().slice(0,10);
+recalc();
+</script>
+
+</body>
+</html>
